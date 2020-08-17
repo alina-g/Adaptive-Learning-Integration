@@ -1,6 +1,9 @@
 # Adaptive-Learning-Integration
 The main page for Adaptive Learning Integration (A.L.I) package. This work was developed during my internship at the Air Force Research Lab, hence pending public release. Different parts of the code may be released at different times.
 
+***This will be a new modularized version which be sent as a PR***
+
+
 ***Part 1: SoftAdapt***
 
 The code in <code> softAdapt_nonMod.py</code> is the non-modular version of the code SoftAdapt. This code is best for non-debugging purposes and it should be used only if one has confidence in all parts of the code. To better understand each part of code, please take a look at the modular version of the code.
