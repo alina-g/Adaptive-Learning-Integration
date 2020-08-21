@@ -22,30 +22,11 @@ import torch
 
 
 
-version = "0.0.5"
+version = "0.1.0"
 backend = "PyTorch"
 
 
 
-def Welcome_BEARD():
-  
-      print("\__________     __________/")
-      print(" |         |-^-|         |")
-      print(" |         |   |         |")
-      print("  `._____.´     `._____.´")
-      print("  \                     /")
-      print("   \\\                 // ")
-      print("    \\\    ////\\\\\\\   //")
-      print("     \\\\\           /// ")
-      print("       \\\\\\\\\\\\|////// ")
-      print("         \\\\\\\\|//// ")
-
-
-      print(" ")
-      print("ALI {} for {} imported succsessfuly".format(version,backend))
-
-    
-Welcome_BEARD();
 
     
 """ 
@@ -90,39 +71,42 @@ Usage :
 
 class SoftAdapt():
 	
-	def __init__(self,n,beta,loss_tensor,i):
+    def __init__(self, n, beta, loss_tensor, i, kappa, string):
         self.n = n
         self.beta = beta
         self.loss_tensor = loss_tensor
         self.i = i
+        self.kappa = kappa
+        self.string = string
+        self.Welcome_BEARD()
 
 ### Soft Adapt ###
 
-	def SoftAdapt(self):
+    def SoftAdapt(self):
      # numerator
     
 	#      self.n = -1 * self.n;
       
         if len(self.n) == 2 : 
      
-        	fe_x = np.zeros(2);
-         	fe_x[0] = self.loss_tensor[0].data.item() * np.exp(self.beta * (self.n[0] - np.max(self.n)));
-         	fe_x[1] = self.loss_tensor[1].data.item() * np.exp(self.beta * (self.n[1] - np.max(self.n)));
-         	denom = fe_x[0] + fe_x[1];
+            fe_x = np.zeros(2);
+            fe_x[0] = self.loss_tensor[0].data.item() * np.exp(self.beta * (self.n[0] - np.max(self.n)));
+            fe_x[1] = self.loss_tensor[1].data.item() * np.exp(self.beta * (self.n[1] - np.max(self.n)));
+            denom = fe_x[0] + fe_x[1];
 
-     	elif len(self.n) == 3 :
+        elif len(self.n) == 3 :
          
-     	    fe_x = np.zeros(3);
-        	fe_x[0] = self.loss_tensor[0].data.item() * np.exp(self.beta * (self.n[0] - np.max(self.n)));
-         	fe_x[1] = self.loss_tensor[1].data.item() * np.exp(self.beta * (self.n[1] - np.max(self.n)));
-         	fe_x[2] = self.loss_tensor[2].data.item() * np.exp(self.beta * (self.n[2] - np.max(self.n)));
-         	denom = fe_x[0] + fe_x[1] + fe_x[2];  
+            fe_x = np.zeros(3);
+            fe_x[0] = self.loss_tensor[0].data.item() * np.exp(self.beta * (self.n[0] - np.max(self.n)));
+            fe_x[1] = self.loss_tensor[1].data.item() * np.exp(self.beta * (self.n[1] - np.max(self.n)));
+            fe_x[2] = self.loss_tensor[2].data.item() * np.exp(self.beta * (self.n[2] - np.max(self.n)));
+            denom = fe_x[0] + fe_x[1] + fe_x[2];  
                                                
-     	else :
+        else :
          	print("As of now, we only support 2 or 3 losses, please check input")
 
                                   
-     	return (fe_x[self.i]/ denom)
+        return (fe_x[self.i]/ denom)
 
 ### PlushAdapt ###
 
@@ -149,7 +133,7 @@ class SoftAdapt():
   
             denom = fe_x[0] + fe_x[1];                                      
          
-             return (fe_x[self.i]/ denom)
+            return (fe_x[self.i]/ denom)
          
 
 
@@ -158,9 +142,9 @@ class SoftAdapt():
             fe_x = np.zeros(3);
          
          # Normalize the slopes
-             self.n[0] = self.n[0] / (np.linalg.norm(self.n,1) + 1e-8);
-             self.n[1] = self.n[1] / (np.linalg.norm(self.n,1) + 1e-8);
-             self.n[2] = self.n[2] / (np.linalg.norm(self.n,1) + 1e-8);
+            self.n[0] = self.n[0] / (np.linalg.norm(self.n,1) + 1e-8);
+            self.n[1] = self.n[1] / (np.linalg.norm(self.n,1) + 1e-8);
+            self.n[2] = self.n[2] / (np.linalg.norm(self.n,1) + 1e-8);
 
          
          # Normalize the loss functions          
@@ -178,7 +162,7 @@ class SoftAdapt():
             denom = fe_x[0] + fe_x[1] + fe_x[2] ;                                      
          
          
-             return (fe_x[self.i]/ denom)
+            return (fe_x[self.i]/ denom)
                                                
         else :
          
@@ -240,12 +224,70 @@ class SoftAdapt():
             print("As of now, we only support 2 or 3 losses, please check input")
 
                             
-
-
+  
+    """
+    Alpha assignment : a function that calls one of the variations of SoftAdapt
+    and it will return the appropiate values for each alpha
+    Usage : 
+        
+        Argument : A vector of slopes n
+                   A constant value for the softmax called kappa (default1 1) 
+                   A tensor of loss values at each iteration loss_tensor 
+                       e.g. if your loss function is MSE + l1, then 
+                       loss_tensor = [MSE, l1];
+                   A string indicating which method you want to use
+                   (default should be PlushAdapt)
+                   """
     
+    def alpha_assign(self):
     
+       
+        alpha = np.zeros(len(self.n));
+      
+        if self.string == "plush":
     
+       
+            for i in range(len(self.n)):
+                    
+                    alpha[i] = self.PlushAdapt(self.n,self.kappa,self.loss_tensor,i);
+                    
+        if self.string == "downy":
+    
+       
+            for i in range(len(self.n)):
+                    
+                    alpha[i] = self.DownyAdapt(self.n,self.kappa,self.loss_tensor,i);
+    
+        if self.string == "soft":
+    
+       
+            for i in range(len(self.n)):
+                    
+                    alpha[i] = self.SoftAdapt(self.n,self.kappa,self.loss_tensor,i);
+        
+        return alpha 
     
       
+    
+    
+    def Welcome_BEARD():
+  
+      print("\__________     __________/")
+      print(" |         |-^-|         |")
+      print(" |         |   |         |")
+      print("  `._____.´     `._____.´")
+      print("  \                     /")
+      print("   \\\                 // ")
+      print("    \\\    ////\\\\\\\   //")
+      print("     \\\\\           /// ")
+      print("       \\\\\\\\\\\\|////// ")
+      print("         \\\\\\\\|//// ")
+
+
+      print(" ")
+      print("ALI {} for {} imported succsessfuly".format(version,backend))
+
+    
+
     
  
